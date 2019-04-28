@@ -5,8 +5,36 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:WpfPlayground"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
-    <Grid>
-        
+        Title="WoW Barracks - Main Window" Height="450" Width="870"
+        x:Name="wndTestWindow" Loaded="WndTestWindow_Loaded">
+    <Grid Background="AntiqueWhite">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="313*"/>
+            <ColumnDefinition Width="479*"/>
+        </Grid.ColumnDefinitions>
+        <TextBox Grid.Column="1" Margin="326,10,10,0" TextWrapping="Wrap" 
+                 Text="{Binding ElementName=wndTestWindow, Path=SelectedItem, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" VerticalAlignment="Top" Height="119" 
+                 BorderThickness="0" IsReadOnly="True"
+                 HorizontalContentAlignment="Left"
+                 Background="Black" Foreground="Green"/>
+        <Label Content="Character Name:" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" FontSize="20"/>
+        <Border Grid.Column="1" Margin="255,0,10,10"
+                BorderBrush="CornflowerBlue" BorderThickness="2" Height="256" VerticalAlignment="Bottom">
+            <Image Source="{Binding CharacterImage, ElementName=wndTestWindow, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"/>
+        </Border>
+        <Label Content="{Binding CharacterLevel, ElementName=wndTestWindow, FallbackValue=1, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" HorizontalAlignment="Left" VerticalAlignment="Top" FontSize="20"
+               ContentStringFormat="Level: {0}" Width="135" Grid.Column="1" Margin="10,10,0,0"/>
+        <Label Content="{Binding CharacterItemLevel, ElementName=wndTestWindow, FallbackValue=1, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" VerticalAlignment="Top" FontSize="20"
+                ContentStringFormat="iLevel: {0}" Margin="10,52,376,0" Grid.Column="1"
+               Foreground="{Binding ItemLevelColor, ElementName=wndTestWindow, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"/>
+        <Label Content="Realm:" HorizontalAlignment="Left" Margin="10,52,0,0" VerticalAlignment="Top" FontSize="20"/>
+        <GridSplitter Height="420" VerticalAlignment="Top" Background="Violet" Width="5"/>
+        <TextBox x:Name="txtCharName" HorizontalAlignment="Left" Height="34" Margin="172,13,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="159"
+                 FontSize="20" Text="{Binding CharacterName, ElementName=wndTestWindow, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                 KeyDown="Keyboard_Shortcuts"/>
+        <TextBox x:Name="txtRelamName" HorizontalAlignment="Left" Height="34" Margin="84,55,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="160"
+                 FontSize="20" Text="{Binding RealmName, ElementName=wndTestWindow, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                 KeyDown="Keyboard_Shortcuts"/>
+        <Button x:Name="btnSearch" Content="Search" VerticalAlignment="Bottom" Height="40" Click="btnSearch_Click" Margin="10,0"/>
     </Grid>
 </Window>

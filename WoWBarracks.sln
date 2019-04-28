@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.28307.102
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WpfPlayground", "WpfPlayground\WpfPlayground.csproj", "{DE05C383-A5D2-4EED-9CFA-3D661159F755}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WoWBarracks", "WpfPlayground\WoWBarracks.csproj", "{DE05C383-A5D2-4EED-9CFA-3D661159F755}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

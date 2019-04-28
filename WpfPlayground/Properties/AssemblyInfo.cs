@@ -7,13 +7,13 @@ using System.Windows;
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("WpfPlayground")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyTitle("WoW™ Barracks")]
+[assembly: AssemblyDescription("Simple program to track characters in World of Warcraft.")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("WpfPlayground")]
+[assembly: AssemblyCompany("Code Composers")]
+[assembly: AssemblyProduct("WoW™ Barracks")]
 [assembly: AssemblyCopyright("Copyright ©  2019")]
-[assembly: AssemblyTrademark("")]
+[assembly: AssemblyTrademark("All Rights Reserved to Blizzard and their APIs")]
 [assembly: AssemblyCulture("")]
 
 // Setting ComVisible to false makes the types in this assembly not visible
@@ -53,3 +53,6 @@ using System.Windows;
 // [assembly: AssemblyVersion("1.0.*")]
 [assembly: AssemblyVersion("1.0.0.0")]
 [assembly: AssemblyFileVersion("1.0.0.0")]
+[assembly: NeutralResourcesLanguage("en-US")]
+[assembly: Guid("4b7e9e3b-5a2d-4fd4-be54-d3cd1e33fa45")]
+
