@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
@@ -8,6 +9,7 @@ using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using ArgentPonyWarcraftClient;
+using System.Linq;
 
 namespace WpfPlayground
 {
@@ -17,6 +19,8 @@ namespace WpfPlayground
     public partial class MainWindow : Window, INotifyPropertyChanged
     {
         private const string DEFAULT_CHAR_IMAGE_SAVE_LOC = @"c:\temp\<CHAR>_image.jpeg";
+        private const string DEFAULT_ITEM_SAVE_LOC = @"c:\temp\<CHAR>\<ITEM>_image.jpeg";
+
         private const string DEFAULT_ITEM_URL = @"https://render-us.worldofwarcraft.com/icons/56/<ITEM>.jpg";
 
         #region INotifyPropertyChanged Implementation
@@ -100,6 +104,16 @@ namespace WpfPlayground
             }
         }
 
+        private Dictionary<string, ImageSource> _itemInventory = new Dictionary<string, ImageSource>();
+        public Dictionary<string, ImageSource> ItemInventory
+        {
+            get => _itemInventory;
+            set {
+                _itemInventory = value;
+                OnPropertyChanged();
+            }
+        }
+
         private string _realmName;
         public string RealmName
         {
@@ -137,7 +151,10 @@ namespace WpfPlayground
 
             if (result.Success)
             {
-                var ilvl = result.Value.Items.AverageItemLevel;
+                var ilvl = result.Value.Items.AverageItemLevelEquipped;
+                var charImg = DEFAULT_CHAR_IMAGE_SAVE_LOC.Replace("<CHAR>", CharacterName);
+
+                Directory.CreateDirectory(charImg.Substring(0, charImg.LastIndexOf("\\")));
 
                 CharacterLevel = result.Value.Level + "";
                 CharacterItemLevel = ilvl + "";
@@ -155,18 +172,43 @@ namespace WpfPlayground
 
                 using(var imageClient = new WebClient())
                 {
-                    imageClient.DownloadFile(@"http://render-us.worldofwarcraft.com/character/" + result.Value.Thumbnail, DEFAULT_CHAR_IMAGE_SAVE_LOC.Replace("<CHAR>", CharacterName));
+                    imageClient.DownloadFile(@"http://render-us.worldofwarcraft.com/character/" + result.Value.Thumbnail, charImg);
 
-                    CharacterImage = new BitmapImage(new Uri(DEFAULT_CHAR_IMAGE_SAVE_LOC.Replace("<CHAR>", CharacterName)));
+                    CharacterImage = new BitmapImage(new Uri(charImg));
                 }
 
-                Console.WriteLine(result.Value.Items.Back.Icon);
+                GetPlayerEquipment(ref result);
             }
             else
             {
                 Console.WriteLine("HTTP Status Code: " + result.Error.Code);
                 Console.WriteLine("HTTP Status Description: " + result.Error.Type);
                 Console.WriteLine("Details: " + result.Error.Detail);
+            }
+        }
+
+        private void GetPlayerEquipment(ref RequestResult<Character> result)
+        {
+            var items = result.Value.Items;
+
+            foreach (var charItemProps in items.GetType().GetProperties().Where(p=>p.PropertyType==typeof(CharacterItem)))
+            {
+                var item = (charItemProps.GetValue(items, null) as CharacterItem);
+                if (item == null) continue;
+                var itemIcon = item.Icon;
+                var itemSlotName = item.Name;
+
+                using (var imageClient = new WebClient())
+                {
+                    var itemImg = DEFAULT_ITEM_SAVE_LOC.Replace("<CHAR>", CharacterName).Replace("<ITEM>", itemIcon);
+
+                    Directory.CreateDirectory(itemImg.Substring(0, itemImg.LastIndexOf("\\")));
+
+                    imageClient.DownloadFile(DEFAULT_ITEM_URL.Replace("<ITEM>", itemIcon), itemImg);
+
+                    var iSource = new BitmapImage(new Uri(itemImg));
+                    stkEquipped.Children.Add(new CharacterItemView(item, iSource));
+                }
             }
         }
 

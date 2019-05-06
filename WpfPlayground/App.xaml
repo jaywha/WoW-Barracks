@@ -4,6 +4,6 @@
              xmlns:local="clr-namespace:WpfPlayground"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
-         
+        <FontFamily x:Key="WoWFontKey">pack://application:,,,/Resources/#Morpheus</FontFamily>
     </Application.Resources>
 </Application>
