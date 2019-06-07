@@ -5,14 +5,19 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:WpfPlayground"
         mc:Ignorable="d"
-        Title="WoW Barracks - Main Window" Height="493.856" Width="920.53"
+        Title="WoW Barracks - Main Window" Height="524.679" Width="920.53"
         x:Name="wndTestWindow" Loaded="WndTestWindow_Loaded"
-        FontFamily="{DynamicResource WoWFontKey}">
-    <Grid Background="AntiqueWhite">
+        FontFamily="{DynamicResource WoWFontKey}" Foreground="Black">
+    <Grid Background="#374665">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="313*"/>
-            <ColumnDefinition Width="479*"/>
+            <ColumnDefinition x:Name="col1" Width="313*"/>
+            <ColumnDefinition x:Name="col2" Width="479*"/>
         </Grid.ColumnDefinitions>
+        <Grid.Resources>
+            <Style TargetType="{x:Type Label}">
+                <Setter Property="Foreground" Value="Goldenrod"/>
+            </Style>
+        </Grid.Resources>
         <Label Content="Character Name:" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" FontSize="20"/>
         <Border Grid.Column="1" Margin="211,110,10,10"
                 BorderBrush="CornflowerBlue" BorderThickness="2">
@@ -22,21 +27,40 @@
                ContentStringFormat="Level: {0}" Width="135" Grid.Column="1" Margin="10,10,0,0"/>
         <Label Content="{Binding CharacterItemLevel, ElementName=wndTestWindow, FallbackValue=1, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" VerticalAlignment="Top" FontSize="20"
                 ContentStringFormat="iLevel: {0}" Margin="10,52,376,0" Grid.Column="1"
-               Foreground="{Binding ItemLevelColor, ElementName=wndTestWindow, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"/>
+               Foreground="{Binding ItemLevelColor, ElementName=wndTestWindow, Mode=OneWay, UpdateSourceTrigger=PropertyChanged, FallbackValue=GoldenRod}"/>
         <Label Content="Realm:" HorizontalAlignment="Left" Margin="100,52,0,0" VerticalAlignment="Top" FontSize="20"/>
-        <GridSplitter Background="Violet" Width="5"/>
+        <GridSplitter Background="DarkGoldenrod" Width="5"/>
         <TextBox x:Name="txtCharName" Height="34" Margin="172,13,10,0" TextWrapping="Wrap" VerticalAlignment="Top"
                  FontSize="20" Text="{Binding CharacterName, ElementName=wndTestWindow, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                  KeyDown="Keyboard_Shortcuts"/>
         <TextBox x:Name="txtRelamName" Height="34" Margin="172,55,10,0" TextWrapping="Wrap" VerticalAlignment="Top"
                  FontSize="20" Text="{Binding RealmName, ElementName=wndTestWindow, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                  KeyDown="Keyboard_Shortcuts"/>
-        <Button x:Name="btnSearch" Content="Search" VerticalAlignment="Bottom" Height="40" Click="btnSearch_Click" Margin="10,0"
-                FontSize="20"/>
-        <ScrollViewer x:Name="svEquipped" Margin="10,94,10,45">
-        <StackPanel x:Name="stkEquipped"
-                    Background="#7F4DAFC5"
-                    Orientation="Vertical"/>
-        </ScrollViewer>
+        <ProgressBar x:Name="prgDataLoading" HorizontalAlignment="Center" Height="20" VerticalAlignment="Center" Width="200" Minimum="0" Maximum="100" Visibility="Collapsed" SmallChange="5" LargeChange="20"/>
+        <Button x:Name="btnSearch" Content="Search" VerticalAlignment="Bottom" Height="30" Click="btnSearch_Click" Margin="10,0,10,10" BorderBrush="#FFAB543E" BorderThickness="1"
+                FontSize="22" Foreground="#FFFFDA8A" Padding="0" VerticalContentAlignment="Center" HorizontalContentAlignment="Center">
+            <Button.Background>
+                <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                    <GradientStop Color="#FFD7132A" Offset="0"/>
+                    <GradientStop Color="#FF4A1B0B" Offset="0.996"/>
+                </LinearGradientBrush>
+            </Button.Background>
+        </Button>
+        <Expander Grid.Column="1" HorizontalAlignment="Left" Height="393" Margin="10,94,0,0" ExpandDirection="Right" Foreground="Gold"
+                  VerticalAlignment="Top" Width="{Binding ElementName=col2, Path=Width, UpdateSourceTrigger=PropertyChanged, Mode=OneWay, FallbackValue=400}">
+            <Expander.Header>
+                <StackPanel Orientation="Vertical">
+                <Label FontSize="16" Content="Item"/>
+                <Label FontSize="16" Content="List"/>
+                </StackPanel>
+            </Expander.Header>
+            <ScrollViewer x:Name="svEquipped">
+                <Grid>
+                    <StackPanel x:Name="stkEquipped"
+                        Background="#7F4DAFC5"
+                        Orientation="Vertical"/>
+                </Grid>
+            </ScrollViewer>
+        </Expander>
     </Grid>
 </Window>

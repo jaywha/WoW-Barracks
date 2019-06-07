@@ -10,6 +10,8 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using ArgentPonyWarcraftClient;
 using System.Linq;
+using System.Security.AccessControl;
+using System.Threading.Tasks;
 
 namespace WpfPlayground
 {
@@ -34,7 +36,8 @@ namespace WpfPlayground
         public ObservableCollection<ItemModel> GridItems
         {
             get => _gridItems;
-            set {
+            set
+            {
                 _gridItems = value;
                 OnPropertyChanged();
             }
@@ -55,7 +58,8 @@ namespace WpfPlayground
         public string CharacterName
         {
             get { return _characterName; }
-            set {
+            set
+            {
                 _characterName = value;
                 OnPropertyChanged();
             }
@@ -87,7 +91,8 @@ namespace WpfPlayground
         public Brush ItemLevelColor
         {
             get { return _itemLevelColor; }
-            set {
+            set
+            {
                 _itemLevelColor = value;
                 OnPropertyChanged();
             }
@@ -98,7 +103,8 @@ namespace WpfPlayground
         public ImageSource CharacterImage
         {
             get => _characterImageUriString;
-            set {
+            set
+            {
                 _characterImageUriString = value;
                 OnPropertyChanged();
             }
@@ -108,7 +114,8 @@ namespace WpfPlayground
         public Dictionary<string, ImageSource> ItemInventory
         {
             get => _itemInventory;
-            set {
+            set
+            {
                 _itemInventory = value;
                 OnPropertyChanged();
             }
@@ -118,7 +125,8 @@ namespace WpfPlayground
         public string RealmName
         {
             get => _realmName;
-            set {
+            set
+            {
                 _realmName = value;
                 OnPropertyChanged();
             }
@@ -129,6 +137,12 @@ namespace WpfPlayground
         public MainWindow()
         {
             InitializeComponent();
+
+            WindowStartupLocation = WindowStartupLocation.CenterScreen;
+
+            DirectorySecurity securityToken = Directory.GetAccessControl(@"c:\temp\");
+            FileSystemAccessRule accRule = new FileSystemAccessRule(Environment.UserName, FileSystemRights.FullControl, AccessControlType.Allow);
+            securityToken.AddAccessRule(accRule);
         }
 
         private void WndTestWindow_Loaded(object sender, RoutedEventArgs e)
@@ -143,6 +157,10 @@ namespace WpfPlayground
 
         private async void btnSearch_Click(object sender, RoutedEventArgs e)
         {
+            btnSearch.Dispatcher.Invoke(() => btnSearch.IsEnabled = false);
+            prgDataLoading.Dispatcher.Invoke(() => prgDataLoading.Visibility = Visibility.Visible);
+            stkEquipped.Children.Clear();
+
             string clientId = "c3ec638cb01b46c1b67b6e92276f99d7";
             string clientSecret = "XQ3ITx7TNofhVlEIYqgTlo1yehqkJw1D";
             var warcraftClient = new WarcraftClient(clientId, clientSecret, Region.US, Locale.en_US);
@@ -159,25 +177,27 @@ namespace WpfPlayground
                 CharacterLevel = result.Value.Level + "";
                 CharacterItemLevel = ilvl + "";
 
-                if(ilvl >= 355 && ilvl < 370)
+                if (ilvl >= 355 && ilvl < 370)
                 {
                     ItemLevelColor = Brushes.Blue;
-                } else if(ilvl >= 370)
+                }
+                else if (ilvl >= 370)
                 {
                     ItemLevelColor = Brushes.Violet;
-                } else
+                }
+                else
                 {
                     ItemLevelColor = Brushes.Black;
                 }
 
-                using(var imageClient = new WebClient())
+                using (var imageClient = new WebClient())
                 {
                     imageClient.DownloadFile(@"http://render-us.worldofwarcraft.com/character/" + result.Value.Thumbnail, charImg);
 
                     CharacterImage = new BitmapImage(new Uri(charImg));
                 }
 
-                GetPlayerEquipment(ref result);
+                await Task.Factory.StartNew(() => GetPlayerEquipment(ref result));
             }
             else
             {
@@ -185,36 +205,47 @@ namespace WpfPlayground
                 Console.WriteLine("HTTP Status Description: " + result.Error.Type);
                 Console.WriteLine("Details: " + result.Error.Detail);
             }
+
+            prgDataLoading.Dispatcher.Invoke(() => prgDataLoading.Value = 0);
+            prgDataLoading.Dispatcher.Invoke(() => prgDataLoading.Visibility = Visibility.Collapsed);
+            btnSearch.Dispatcher.Invoke(() => btnSearch.IsEnabled = true);
         }
 
         private void GetPlayerEquipment(ref RequestResult<Character> result)
         {
             var items = result.Value.Items;
-
-            foreach (var charItemProps in items.GetType().GetProperties().Where(p=>p.PropertyType==typeof(CharacterItem)))
+            var filteredItems = items.GetType().GetProperties().Where(p => p.PropertyType == typeof(CharacterItem));
+            var numLoaded = 1;
+            foreach (var charItemProps in filteredItems)
             {
-                var item = (charItemProps.GetValue(items, null) as CharacterItem);
-                if (item == null) continue;
-                var itemIcon = item.Icon;
-                var itemSlotName = item.Name;
+                prgDataLoading.Dispatcher.Invoke(() => prgDataLoading.Value = (numLoaded++ / 18.0) * 100.0);
 
-                using (var imageClient = new WebClient())
-                {
-                    var itemImg = DEFAULT_ITEM_SAVE_LOC.Replace("<CHAR>", CharacterName).Replace("<ITEM>", itemIcon);
+                stkEquipped.Dispatcher.Invoke(() => {
+                    var item = (charItemProps.GetValue(items, null) as CharacterItem);
+                    if (item != null)
+                    {
+                        var itemIcon = item.Icon;
+                        var itemSlotName = item.Name;
 
-                    Directory.CreateDirectory(itemImg.Substring(0, itemImg.LastIndexOf("\\")));
+                        using (var imageClient = new WebClient())
+                        {
+                            var itemImg = DEFAULT_ITEM_SAVE_LOC.Replace("<CHAR>", CharacterName).Replace("<ITEM>", itemIcon);
 
-                    imageClient.DownloadFile(DEFAULT_ITEM_URL.Replace("<ITEM>", itemIcon), itemImg);
+                            Directory.CreateDirectory(itemImg.Substring(0, itemImg.LastIndexOf("\\")));
 
-                    var iSource = new BitmapImage(new Uri(itemImg));
-                    stkEquipped.Children.Add(new CharacterItemView(item, iSource));
-                }
+                            imageClient.DownloadFile(DEFAULT_ITEM_URL.Replace("<ITEM>", itemIcon), itemImg);
+
+                            var iSource = new BitmapImage(new Uri(itemImg));
+                            stkEquipped.Children.Add(new CharacterItemView(item, iSource));
+                        }
+                    }
+                });
             }
         }
 
         private void Keyboard_Shortcuts(object sender, System.Windows.Input.KeyEventArgs e)
         {
-            if(e.Key == System.Windows.Input.Key.Enter)
+            if (e.Key == System.Windows.Input.Key.Enter)
             {
                 btnSearch_Click(btnSearch, null);
             }
